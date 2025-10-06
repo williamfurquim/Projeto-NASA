@@ -48,7 +48,7 @@ onAuthStateChanged(auth, (firebaseUser) => {
     user.name = firebaseUser.email || "Anonymous";
     user.color = getRandomColor();
 
-    websocket = new WebSocket("wss://api-de-conversa-da-nasa.onrender.com");
+    websocket = new WebSocket("wss://chat-backend-cyeu.onrender.com");
     websocket.onmessage = processMessage;
   }
 });
@@ -137,3 +137,4 @@ const sendMessage = (event) => {
 
 
 chatForm.addEventListener("submit", sendMessage)
+
