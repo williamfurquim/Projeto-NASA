@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#9C27B0">
+  <link rel="stylesheet" href="./CSS/menu.css">
+  <title>UrbanConnect</title>
+</head>
+
+<body>
+  <main>
+    <section class="s-logo">
+      <img src="./Imagens/urban-logo.png" style="height: 190px; width: auto;" alt="logo Proximity" />
+      <h1 class="msg">Contribute to a better planet</h1>
+    </section>
+
+    <section class="s-botoes">
+      <div class="botoes-grandes">
+
+        <a href="./alertas.html">
+          <button class="alert">Security Alerts</button>
+        </a>
+
+        <a href="./eventos.html">
+          <button class="event">Events</button>
+        </a>
+
+        <a href="./compartilhamento.html">
+          <button class="compart">Forum for conversation</button>
+        </a>
+
+      </div>
+
+      <div class="botoes-pequenos">
+        <a href="./index.html">
+          <button class="trocarConta">👤 Switch account</button>
+        </a>
+
+        <a href="https://claude.ai/public/artifacts/80d70ebc-3ef3-4aa0-b612-577ca62c6996?fullscreen=false" target="_blank">
+          <button class="conversarIA">🤖 Access Deimos</button>
+        </a>
+      </div>
+    </section>
+
+    <section class="s-user">
+      <div id="user-info">
+        Carregando usuário...
+      </div>
+    </section>
+  </main>
+
+
+  <script>
+    window.addEventListener('load', () => {
+      document.body.classList.add('fade-in');
+    });
+  </script>
+
+  <script src="./JS/register-sw.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+    // ===== FIREBASE =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyCA9zaEQ-_UC9OY_hIPkMMZF7n0qdDbbp0",
+      authDomain: "nasa-da34e.firebaseapp.com",
+      databaseURL: "https://nasa-da34e-default-rtdb.firebaseio.com",
+      projectId: "nasa-da34e",
+      storageBucket: "nasa-da34e.firebasestorage.app",
+      messagingSenderId: "412478893295",
+      appId: "1:412478893295:web:c4dd1fb3c19425dddabf1a"
+    };  
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+
+    const userInfoDiv = document.getElementById('user-info');
+
+    // ===== EXIBIR TEXTO COM IDENTIFICAÇÃO DO PERFIL =====
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const displayName = user.displayName || "Usuário sem nome";
+        const email = user.email;
+        userInfoDiv.innerHTML = `Logged in as: <strong>${user.email}</strong>`;
+      } else {
+        userInfoDiv.innerHTML = "Nenhum usuário logado";
+      }
+    });
+  </script>
+
+</body>
+
+</html>

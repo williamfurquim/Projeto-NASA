@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#9C27B0">
+  <title>Events</title>
+  <link rel="stylesheet" href="./CSS/eventos.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="container-content">
+
+      <div class="topo">
+        <h1>Events</h1>
+        <div class="calendar">📅</div>
+      </div>
+
+      <div class="titulo">Stay inside!</div>
+
+      <a href="./menu.html">
+        <button id="ofe">Return</button>
+      </a>
+
+      <div id="eventosDinamicos"></div>
+
+    </div>
+
+    <div class="botoes">
+
+      <a href="./btn-eventos.html">
+        <button class="btn-adicionar">Add event</button>
+      </a>
+
+    </div>
+  </div>
+
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="./JS/firebase-config.js"></script>
+
+  <script>
+    const container = document.getElementById('eventosDinamicos');
+
+    // ===== CHECAGEM DE USUÁRIO LOGADO =====
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        alert("Você precisa estar logado para ver os eventos.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      // ===== IDENTIFICA SE HÁ EVENTOS CADASTRADOS =====
+      const eventosRef = firebase.database().ref("eventos");
+      eventosRef.once("value", snapshot => {
+        container.innerHTML = "";
+        if (!snapshot.exists()) {
+          container.innerHTML = "<p>Não há eventos cadastrados ainda.</p>";
+          return;
+        }
+
+        // ===== ADIÇÃO DE EVENTO =====
+        snapshot.forEach(child => {
+          const evento = child.val();
+          const key = child.key;
+
+          
+          const dataHoraString = `${evento.data} ${evento.hora || "00:00"}`; 
+          const eventoDate = new Date(dataHoraString);
+
+          
+          if (eventoDate < new Date()) {
+            firebase.database().ref("eventos").child(key).remove(); 
+            return; 
+          }
+
+          const div = document.createElement('div');
+          div.className = 'evento';
+
+          const botoes = evento.uid === user.uid ? `
+          <button class="btn-excluir" onclick="excluirEvento('${key}')">🗑️ Excluir Evento</button>
+          <button class="btn-editar" onclick="editarEvento('${key}')">✏️ Editar Evento</button>
+        ` : '';
+
+          div.innerHTML = `
+          <small>${evento.data}</small>
+          <div class="evento-info">
+            <div>
+              <h3>${evento.titulo} <small style="font-weight: normal; font-size: 20px;">(${evento.hora})</small></h3>
+              <p>${evento.local}</p>
+              ${evento.descricao ? `<p style="color:white">${evento.descricao}</p>` : ''}
+              ${evento.contato ? `<p>Contato: ${evento.contato}</p>` : ''}
+              ${botoes}
+            </div>
+          </div>
+          `;
+          container.appendChild(div);
+        });
+      });
+    });
+
+    function excluirEvento(key) {
+      if (confirm("Tem certeza que deseja excluir este evento?")) {
+        firebase.database().ref("eventos").child(key).remove()
+          .then(() => location.reload())
+          .catch(error => console.error("Erro ao excluir:", error));
+      }
+    }
+
+    function editarEvento(key) {
+      window.location.href = `btn-eventos.html?id=${key}`;
+    }
+  </script>
+  <script src="./JS/register-sw.js"></script>
+
+</body>
+
+</html>

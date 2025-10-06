@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEIMOS - Assistente Urbano NASA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #0f172a, #1e293b);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .nasa-font {
+            font-family: 'Orbitron', Arial, sans-serif;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+        }
+        
+        header {
+            background: #1e293b;
+            border-bottom: 4px solid #dc2626;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            color: #22d3ee;
+            font-size: 0.875rem;
+        }
+        
+        .alert {
+            background: linear-gradient(to right, rgba(6, 78, 59, 0.4), rgba(21, 94, 117, 0.4));
+            border-bottom: 2px solid #10b981;
+            padding: 1rem;
+        }
+        
+        .alert-content {
+            max-width: 72rem;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .alert-text {
+            flex: 1;
+        }
+        
+        .alert-text h3 {
+            color: #6ee7b7;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .alert-text p {
+            color: #cbd5e1;
+            font-size: 0.875rem;
+        }
+        
+        .alert-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-green {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .btn-green:hover {
+            background: #22c55e;
+        }
+        
+        .btn-close {
+            background: transparent;
+            color: #94a3b8;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .btn-close:hover {
+            color: white;
+        }
+        
+        .container {
+            max-width: 72rem;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            background: #1e293b;
+            color: #94a3b8;
+            position: relative;
+        }
+        
+        .tab:hover {
+            background: #334155;
+        }
+        
+        .tab.active {
+            background: #334155;
+            color: white;
+        }
+        
+        .tab-badge {
+            position: absolute;
+            top: -0.25rem;
+            right: -0.25rem;
+            background: #10b981;
+            color: white;
+            font-size: 0.75rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .content {
+            background: #334155;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            min-height: 500px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .suggestion-btn {
+            padding: 0.5rem 1rem;
+            background: #475569;
+            border: none;
+            border-radius: 9999px;
+            color: white;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .suggestion-btn:hover {
+            background: #dc2626;
+        }
+        
+        .chat-box {
+            background: #1e293b;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            height: 384px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+        
+        .message {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            max-width: 85%;
+        }
+        
+        .message.user {
+            background: #475569;
+            color: #22d3ee;
+            margin-left: auto;
+        }
+        
+        .message.bot {
+            background: #334155;
+            border: 1px solid #475569;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: #0f172a;
+            border: 2px solid #dc2626;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .input-group input::placeholder {
+            color: rgba(34, 211, 238, 0.5);
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #ef4444;
+        }
+        
+        .btn-send {
+            padding: 0.75rem 1.5rem;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-send:hover {
+            background: #ef4444;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin: 2rem 0;
+        }
+        
+        .info-box {
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .info-box h3 {
+            color: #22d3ee;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .info-box li {
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            margin: 0.5rem 0;
+        }
+        
+        .community-card {
+            background: #1e293b;
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+        
+        .community-card.active {
+            border-left-color: #10b981;
+        }
+        
+        .community-card.urgent {
+            border-left-color: #f97316;
+        }
+        
+        .community-card.planning {
+            border-left-color: #06b6d4;
+        }
+        
+        .community-header {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .community-icon {
+            font-size: 2.5rem;
+        }
+        
+        .community-title h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .community-desc {
+            color: #22d3ee;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .neighbor-list {
+            background: #0f172a;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .neighbor-list ul {
+            list-style: none;
+            padding-left: 1rem;
+        }
+        
+        .neighbor-list li {
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            margin: 0.25rem 0;
+        }
+        
+        footer {
+            background: #0f172a;
+            border-top: 1px solid #334155;
+            padding: 1.5rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        footer p {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin: 0.5rem 0;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            max-width: 72rem;
+            margin: 1rem auto;
+        }
+        
+        .footer-item h4 {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="nasa-font">DEIMOS</h1>
+        <p class="nasa-font">Assistente Urbano NASA - Dados Reais + Conexão Comunitária</p>
+    </header>
+    
+    <div id="alert" class="alert">
+        <div class="alert-content">
+            <div class="alert-text">
+                <h3 class="animate-pulse">🔔 Novas conexões comunitárias disponíveis!</h3>
+                <p>4 vizinhos próximos compartilham seus interesses ambientais</p>
+            </div>
+            <div class="alert-buttons">
+                <button class="btn btn-green nasa-font" onclick="showTab('comunidade')">Ver Conexões</button>
+                <button class="btn btn-close" onclick="document.getElementById('alert').style.display='none'">✕</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active nasa-font" onclick="showTab('chat')">💬 Chat</button>
+            <button class="tab nasa-font" onclick="showTab('comunidade')">
+                👥 Comunidade
+                <span class="tab-badge">4</span>
+            </button>
+            <button class="tab nasa-font" onclick="showTab('viz-temp')">🌡️ Temperatura</button>
+            <button class="tab nasa-font" onclick="showTab('viz-precip')">💧 Precipitação</button>
+            <button class="tab nasa-font" onclick="showTab('casos')">📋 Casos de Uso</button>
+        </div>
+        
+        <div class="content">
+            <!-- Chat Tab -->
+            <div id="chat" class="tab-panel active">
+                <div class="suggestions">
+                    <button class="suggestion-btn" onclick="setInput('Mostrar tendência de temperatura')">Mostrar tendência de temperatura</button>
+                    <button class="suggestion-btn" onclick="setInput('Análise de precipitação mensal')">Análise de precipitação mensal</button>
+                    <button class="suggestion-btn" onclick="setInput('Como dimensionar drenagem urbana?')">Como dimensionar drenagem urbana?</button>
+                    <button class="suggestion-btn" onclick="setInput('Conectar com vizinhos - energia solar')">Conectar com vizinhos - energia solar</button>
+                    <button class="suggestion-btn" onclick="setInput('Grupos ambientais próximos')">Grupos ambientais próximos</button>
+                </div>
+                
+                <div id="chatBox" class="chat-box">
+                    <div class="message bot">
+                        Olá! Sou Deimos, assistente baseado em dados oficiais da NASA. Agora com visualizações interativas e conexão comunitária. Como posso ajudar?
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="messageInput" placeholder="Pergunte sobre dados climáticos NASA ou conexões comunitárias..." onkeypress="handleKeyPress(event)">
+                    <button class="btn-send nasa-font" onclick="sendMessage()">Enviar</button>
+                </div>
+            </div>
+            
+            <!-- Comunidade Tab -->
+            <div id="comunidade" class="tab-panel">
+                <h2 class="nasa-font" style="margin-bottom: 1rem;">👥 Conexões Comunitárias - Ação Ambiental Local</h2>
+                <p style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 1.5rem;">IA conecta você com vizinhos próximos que compartilham interesses ambientais para ações coletivas</p>
+                
+                <div class="community-card active">
+                    <div class="community-header">
+                        <div class="community-icon">☀️</div>
+                        <div>
+                            <div class="community-title">
+                                <h3 class="nasa-font">Energia Solar Coletiva</h3>
+                                <p class="community-desc">Você e 4 vizinhos querem instalar energia solar coletiva</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="neighbor-list">
+                        <p style="font-weight: bold; color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">📍 Vizinhos próximos interessados:</p>
+                        <ul>
+                            <li>• Maria Silva (300m)</li>
+                            <li>• João Santos (450m)</li>
+                            <li>• Ana Costa (520m)</li>
+                            <li>• Pedro Lima (680m)</li>
+                        </ul>
+                    </div>
+                    <p style="color: #10b981; font-weight: bold; font-size: 0.875rem; margin-bottom: 0.5rem;">💰 Economia estimada: R$ 2.400/ano por residência</p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button class="btn btn-green" style="flex: 1;">Participar do Grupo</button>
+                        <button class="btn" style="background: #475569; color: white;">Mais Info</button>
+                    </div>
+                </div>
+                
+                <div class="community-card urgent">
+                    <div class="community-header">
+                        <div class="community-icon">🌳</div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div class="community-title">
+                                    <h3 class="nasa-font">Reflorestamento Urbano</h3>
+                                    <p class="community-desc">Alerta: grupo local de reflorestamento busca voluntários</p>
+                                </div>
+                                <span style="background: #f97316; color: white; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: bold;" class="animate-pulse">URGENTE</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="neighbor-list">
+                        <p style="font-weight: bold; color: #cbd5e1; font-size: 0.875rem; margin-bottom: 0.5rem;">📍 Vizinhos próximos interessados:</p>
+                        <ul>
+                            <li>• Grupo Verde Bairro (12 membros)</li>
+                            <li>• ONG Árvores Urbanas</li>
+                        </ul>
+                    </div>
+                    <p style="color: #fb923c; font-weight: bold; font-size: 0.875rem; margin-bottom: 0.5rem;">📅 Plantio coletivo: Sábado 09h - Praça Central</p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button class="btn btn-green" style="flex: 1;">Participar do Grupo</button>
+                        <button class="btn" style="background: #475569; color: white;">Mais Info</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Temperatura Tab -->
+            <div id="viz-temp" class="tab-panel">
+                <h2 class="nasa-font" style="margin-bottom: 0.5rem;">🌡️ Tendência de Temperatura - VEMAP 2 (EUA, 1895-1993)</h2>
+                <p style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 1.5rem;">Dados oficiais NASA mostram aumento gradual de temperatura. Essencial para planejamento de longo prazo.</p>
+                
+                <div class="chart-container">
+                    <canvas id="tempChart"></canvas>
+                </div>
+                
+                <div class="info-box">
+                    <h3 class="nasa-font">📊 Análise para Urbanistas:</h3>
+                    <ul>
+                        <li>✓ Aumento de ~1.2°C no período (11.2°C → 12.4°C)</li>
+                        <li>✓ Tendência acelerada após 1975</li>
+                        <li>✓ <strong>Ação requerida:</strong> Aumentar áreas verdes em 30-40%</li>
+                        <li>✓ Priorizar arborização em áreas com temperatura 2°C+ acima da média</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Precipitação Tab -->
+            <div id="viz-precip" class="tab-panel">
+                <h2 class="nasa-font" style="margin-bottom: 0.5rem;">💧 Precipitação Mensal - Porto Rico (Resolução 1km)</h2>
+                <p style="color: #cbd5e1; font-size: 0.875rem; margin-bottom: 1.5rem;">Padrão típico de clima tropical. Crítico para dimensionamento de drenagem urbana.</p>
+                
+                <div class="chart-container">
+                    <canvas id="precipChart"></canvas>
+                </div>
+                
+                <div class="info-box">
+                    <h3 class="nasa-font">💧 Cálculo Prático - Sistema de Drenagem:</h3>
+                    <div style="background: #0f172a; padding: 0.75rem; border-radius: 0.5rem; margin: 0.75rem 0;">
+                        <strong style="color: #ef4444;">Pico: 180 mm/mês (Maio)</strong>
+                        <p style="margin-top: 0.5rem;">Para área de 1 hectare: 1.800 m³/mês = 60 m³/dia</p>
+                    </div>
+                    <div style="background: #0f172a; padding: 0.75rem; border-radius: 0.5rem;">
+                        <strong style="color: #22d3ee;">Dimensionamento:</strong>
+                        <ul style="margin-top: 0.5rem; padding-left: 1rem;">
+                            <li>→ Vazão de projeto: 60 m³/dia × 1.3 (segurança) = 78 m³/dia</li>
+                            <li>→ Tubulação mínima: DN 400mm (considera picos de 3h)</li>
+                            <li>→ Infraestrutura verde: reduz 50% do volume (39 m³/dia)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Casos de Uso Tab -->
+            <div id="casos" class="tab-panel">
+                <h2 class="nasa-font" style="margin-bottom: 1.5rem;">📋 Casos de Uso Práticos - Dados NASA no Planejamento</h2>
+                
+                <div style="background: #1e293b; padding: 1.25rem; border-radius: 0.5rem; border-left: 4px solid #dc2626; margin-bottom: 1rem;">
+                    <h3 style="color: #ef4444; font-size: 1.25rem; margin-bottom: 0.75rem;" class="nasa-font">1. Combate a Enchentes Urbanas</h3>
+                    <p style="font-size: 0.875rem; margin-bottom: 0.5rem;"><strong>Dataset:</strong> Porto Rico Sub-daily (1km, 3h)</p>
+                    <p style="font-size: 0.875rem; margin-bottom: 0.5rem;"><strong>Método:</strong></p>
+                    <ol style="margin-left: 1rem; font-size: 0.875rem;">
+                        <li>Identificar eventos extremos (precipitação > 50mm/3h)</li>
+                        <li>Calcular frequência histórica (tempo de retorno)</li>
+                        <li>Dimensionar drenagem para TR = 25 anos</li>
+                        <li>Adicionar infraestrutura verde (reduz 50-80% do volume)</li>
+                    </ol>
+                    <p style="color: #22d3ee; font-weight: bold; margin-top: 0.5rem; font-size: 0.875rem;"><strong>Resultado:</strong> Redução de 70% em alagamentos</p>
+                </div>
+                
+                <div style="background: rgba(220, 38, 38, 0.2); border: 1px solid #dc2626; padding: 1rem; border-radius: 0.5rem; display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 1.5rem;">⬇️</span>
+                    <div style="flex: 1;">
+                        <p style="font-weight: bold;" class="nasa-font">Acesse os Datasets Completos</p>
+                        <p style="font-size: 0.875rem; color: #94a3b8;">Todos os dados usados estão disponíveis em data.nasa.gov</p>
+                    </div>
+                    <button class="btn" style="background: #dc2626; color: white;">Acessar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p style="color: #94a3b8; font-size: 0.875rem;">Fonte dos Dados:</p>
+        <p style="color: white; font-weight: bold;" class="nasa-font">NASA Open Data Portal</p>
+        
+        <div class="footer-grid">
+            <div class="footer-item">
+                <h4 class="nasa-font">VEMAP 2</h4>
+                <p>Clima EUA (1895-1993)</p>
+                <p style="font-size: 0.75rem;">Oak Ridge National Laboratory DAAC</p>
+            </div>
+            <div class="footer-item">
+                <h4 class="nasa-font">Porto Rico Sub-daily</h4>
+                <p>Forçamento climático 1km/3h</p>
+                <p style="font-size: 0.75rem;">Daymet V4 + GSWP3/NARR</p>
+            </div>
+            <div class="footer-item">
+                <h4 class="nasa-font">WACS II</h4>
+                <p>Aerossóis marinhos</p>
+                <p style="font-size: 0.75rem;">Western Atlantic Climate Study</p>
+            </div>
+        </div>
+        
+        <p style="margin-top: 1.5rem; font-size: 0.75rem; color: #64748b;">
+            Todos os dados climáticos são de domínio público e estão disponíveis gratuitamente no portal NASA Earth Data
+        </p>
+    </footer>
+    
+    <script>
+        // Data
+        const tempData = [
+            { ano: 1895, temp: 11.2 }, { ano: 1905, temp: 11.4 }, { ano: 1915, temp: 11.1 },
+            { ano: 1925, temp: 11.3 }, { ano: 1935, temp: 11.6 }, { ano: 1945, temp: 11.5 },
+            { ano: 1955, temp: 11.7 }, { ano: 1965, temp: 11.6 }, { ano: 1975, temp: 11.8 },
+            { ano: 1985, temp: 12.1 }, { ano: 1993, temp: 12.4 }
+        ];
+        
+        const precipData = [
+            { mes: 'Jan', mm: 65 }, { mes: 'Fev', mm: 58 }, { mes: 'Mar', mm: 72 },
+            { mes: 'Abr', mm: 135 }, { mes: 'Mai', mm: 180 }, { mes: 'Jun', mm: 145 },
+            { mes: 'Jul', mm: 155 }, { mes: 'Ago', mm: 170 }, { mes: 'Set', mm: 165 },
+            { mes: 'Out', mm: 150 }, { mes: 'Nov', mm: 130 }, { mes: 'Dez', mm: 95 }
+        ];
+        
+        // Charts
+        let tempChart, precipChart;
+        
+        function initCharts() {
+            const tempCtx = document.getElementById('tempChart').getContext('2d');
+            tempChart = new Chart(tempCtx, {
+                type: 'line',
+                data: {
+                    labels: tempData.map(d => d.ano),
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: tempData.map(d => d.temp),
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 10.5, max: 13, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8' } }
+                    }
+                }
+            });
+            
+            const precipCtx = document.getElementById('precipChart').getContext('2d');
+            precipChart = new Chart(precipCtx, {
+                type: 'bar',
+                data: {
+                    labels: precipData.map(d => d.mes),
+                    datasets: [{
+                        label: 'Precipitação (mm)',
+                        data: precipData.map(d => d.mm),
+                        backgroundColor: '#22d3ee',
+                        borderColor: '#06b6d4',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+        
+        // Tab switching
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const panels = document.querySelectorAll('.tab-panel');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            panels.forEach(panel => panel.classList.remove('active'));
+            
+            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'viz-temp' || tabName === 'viz-precip') {
+                setTimeout(initCharts, 100);
+            }
+        }
+        
+        // Chat functionality
+        function setInput(text) {
+            document.getElementById('messageInput').value = text;
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const chatBox = document.getElementById('chatBox');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.textContent = text;
+            chatBox.appendChild(userMsg);
+            
+            // Clear input
+            input.value = '';
+            
+            // Scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            // Generate bot response
+            setTimeout(() => {
+                const q = text.toLowerCase();
+                let response = '';
+                
+                if (q.includes('temperatura') || q.includes('tendência')) {
+                    response = 'Veja a tendência de temperatura nos EUA (1895-1993) no gráfico acima. Dados VEMAP mostram aumento de ~1.2°C no período. Para planejamento urbano, isso indica necessidade de aumentar áreas verdes e considerar ilhas de calor em projetos futuros.';
+                    setTimeout(() => showTab('viz-temp'), 500);
+                } else if (q.includes('precipitação') || q.includes('chuva')) {
+                    response = 'Análise de precipitação mensal para clima tropical (baseado em Porto Rico). Maio-Agosto são críticos para dimensionamento de sistemas de drenagem. Recomendo sistemas com capacidade para 180+ mm/mês.';
+                    setTimeout(() => showTab('viz-precip'), 500);
+                } else if (q.includes('drenagem')) {
+                    response = 'Para dimensionar drenagem urbana: (1) Use dados de precipitação máxima histórica (Porto Rico: resolução 3h); (2) Calcule vazão de pico com tempo de concentração; (3) Adicione 30% de margem para eventos extremos; (4) Considere infraestrutura verde (jardins de chuva retêm 50-80% do volume).';
+                } else if (q.includes('ilha de calor')) {
+                    response = 'Dados de temperatura VEMAP mostram aquecimento gradual. Para combater ilhas de calor: (1) Aumente cobertura arbórea (reduz 3-5°C); (2) Use pavimentos permeáveis claros; (3) Implante telhados verdes; (4) Crie corredores de ventilação. Use dados de radiação solar para mapear áreas críticas.';
+                } else if (q.includes('captação') || q.includes('pluvial')) {
+                    response = 'Cálculo de captação pluvial: Volume = Área_telhado(m²) × Precipitação_anual(mm) × 0.8 (coeficiente). Exemplo: telhado 100m² em região com 1500mm/ano = 120.000L/ano. Use dados mensais (gráfico) para dimensionar reservatórios.';
+                } else if (q.includes('vizinho') || q.includes('energia solar') || q.includes('comunidade') || q.includes('grupo')) {
+                    response = 'Encontrei 4 conexões comunitárias na sua região! Veja a aba "Comunidade" para conectar-se com vizinhos que compartilham interesses ambientais: energia solar coletiva, reflorestamento, hortas urbanas e captação de água.';
+                    setTimeout(() => showTab('comunidade'), 500);
+                } else {
+                    response = 'Posso ajudar com análises de dados climáticos da NASA para planejamento urbano e conectar você com vizinhos interessados em ações ambientais. Clique em "Comunidade" ou escolha uma sugestão.';
+                }
+                
+                const botMsg = document.createElement('div');
+                botMsg.className = 'message bot';
+                botMsg.textContent = response;
+                chatBox.appendChild(botMsg);
+                
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 800);
+        }
+        
+        // Initialize charts when page loads
+        window.addEventListener('load', () => {
+            // Charts will be initialized when tabs are clicked
+        });
+    </script>
+</body>
+</html>

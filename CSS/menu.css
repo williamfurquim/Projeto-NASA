@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 550;
+  font-style: normal;
+}
+
+/* ===== BODY ===== */
+body {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #0b132b;
+  overflow: hidden;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* ===== MAIN PERSONALIZADO ===== */
+main {
+  background: linear-gradient(135deg, #152553, #0a1332, #0b1b4b);
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  color: #e0e6ed;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+  transition: all 0.4s ease;
+}
+
+/* ===== LOGO ===== */
+.s-logo {
+  width: 100%;
+  height: 35%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.s-logo h1 {
+  font-size: 36px;
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  margin-top: 10px;
+}
+
+/* ===== BOTÕES ===== */
+.s-botoes {
+  width: 100%;
+  height: 55%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.botoes-grandes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 60%;
+  height: 80%;
+}
+
+.botoes-pequenos {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 380px;
+  height: 15%;
+}
+
+/* ===== BOTÕES GRANDES ===== */
+.botoes-grandes button {
+  width: 380px;
+  height: 75px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  color: #fff;
+  background: linear-gradient(135deg, #0055ff, #0039a6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.botoes-grandes button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 85, 255, 0.6);
+}
+
+/* ===== BOTÕES PEQUENOS ===== */
+.botoes-pequenos button {
+  width: 180px;
+  height: 50px;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1em;
+  color: #fff;
+  background: linear-gradient(135deg, #d80910, #a2060d);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.botoes-pequenos button:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(216, 9, 16, 0.6);
+}
+
+/* ===== SEÇÃO USUÁRIO ===== */
+.s-user {
+  background-color: rgba(0, 0, 0, 0.2);
+  width: 100%;
+  height: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #e0e6ed;
+  font-size: 1em;
+  letter-spacing: 0.5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== ANIMAÇÕES ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media screen and (max-width: 510px) {
+
+  .s-logo h1 {
+  font-size: 28px;
+}
+}

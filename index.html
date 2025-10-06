@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#9C27B0">
+  <link rel="stylesheet" href="./CSS/style.css">
+  <meta name="theme-color" content="#2196f3">
+  <title>UrbanConnect</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+
+<body>
+  <main>
+    
+      <section class="s-logo">
+        <img src="./Imagens/logobranco.png" style="height: 10vh; width: auto;" alt="Logo" id="logo" />
+        <img src="./Imagens/urban-logo.png" style="height: 25vh; width: auto;" alt="">
+      </section>
+
+
+      <section class="s-botoes">
+        <button class="login">Login</button>
+        <button class="cadastro">Register</button>
+
+        <form class="formulario login-form" style="display: block;">
+          <input class="input-login" type="text" placeholder="Username" required />
+          <input class="input-login" type="password" placeholder="Password" required />
+          <button class="btn" type="submit">Enter</button>
+        </form>
+
+        <form class="formulario cadastro-form" style="display: none;">
+          <input class="input-cad" type="text" placeholder="Username" required />
+          <input class="input-cad" type="password" placeholder="Password (+8 caracters)" required />
+          <input class="input-cad" type="password" placeholder="Confirm password" required />
+          <button class="btn" type="submit">Create account</button>
+        </form>
+      </section>
+
+      <section class="s-desenvolvedores">
+        <div class="d-desenvolvedores">
+          <div class="icone">
+            <img src="./Imagens/github-icon.png" alt="">
+            <a href="https://github.com/amandajaguella12" target="_blank">Amanda Jaguella</a>
+          </div>
+
+          <div class="icone">
+            <img src="./Imagens/github-icon.png" alt="">
+            <a href="https://github.com/LegendaryRocketRaccoon" target="_blank">Gustavo Chimello</a>
+          </div>
+
+          <div class="icone">
+            <img src="./Imagens/github-icon.png" alt="">
+            <a href="https://github.com/Lucas-Miyaki" target="_blank">Lucas Miyaki</a>
+          </div>
+
+          <div class="icone">
+            <img src="./Imagens/github-icon.png" alt="">
+            <a href="https://github.com/TheAppleJuicer" target="_blank">Olavo Xavier</a>
+          </div>
+
+          <div class="icone">
+            <img src="./Imagens/github-icon.png" alt="">
+            <a href="https://github.com/williamfurquim" target="_blank">William Furquim</a>
+          </div>
+        </div>
+      </section>
+    
+
+  </main>
+
+  <div class="d-wallpaper"></div>
+
+  <script>
+    // ===== FIREBASE =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyCA9zaEQ-_UC9OY_hIPkMMZF7n0qdDbbp0",
+      authDomain: "nasa-da34e.firebaseapp.com",
+      databaseURL: "https://nasa-da34e-default-rtdb.firebaseio.com",
+      projectId: "nasa-da34e",
+      storageBucket: "nasa-da34e.firebasestorage.app",
+      messagingSenderId: "412478893295",
+      appId: "1:412478893295:web:c4dd1fb3c19425dddabf1a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // ===== ELEMENTOS =====
+    const loginBtn = document.querySelector('.login');
+    const cadastroBtn = document.querySelector('.cadastro');
+    const loginForm = document.querySelector('.login-form');
+    const cadastroForm = document.querySelector('.cadastro-form');
+
+    // ===== INPUTS DE LOGIN =====
+    loginBtn.addEventListener('click', () => {
+      loginForm.style.display = 'block';
+      cadastroForm.style.display = 'none';
+    });
+
+    // ===== INPUTS DE CADASTRO =====
+    cadastroBtn.addEventListener('click', () => {
+      cadastroForm.style.display = 'block';
+      loginForm.style.display = 'none';
+    });
+
+    // ===== CRIAÇÃO DE CONTA (CADASTRO) =====
+    cadastroForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const inputs = cadastroForm.querySelectorAll('input');
+      const username = inputs[0].value.trim();
+      const password = inputs[1].value.trim();
+      const confirmPassword = inputs[2].value.trim();
+
+      if (password.length < 8) {
+        inputs[1].classList.add('shake');
+        setTimeout(() => inputs[1].classList.remove('shake'), 300);
+        alert("Sua senha deve conter pelo menos 8 dígitos")
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        [inputs[1], inputs[2]].forEach(input => {
+          input.classList.add('shake');
+          setTimeout(() => input.classList.remove('shake'), 300);
+        });
+        alert("Suas senhas não coincidem!")
+        return;
+      }
+
+      const emailFake = username + "@urbanconnect.app";
+
+      auth.createUserWithEmailAndPassword(emailFake, password)
+        .then(() => {
+          cadastroForm.classList.add('fade-out');
+          setTimeout(() => {
+            cadastroForm.style.display = 'none';
+            cadastroForm.classList.remove('fade-out');
+            cadastroForm.reset();
+
+            loginForm.style.display = 'block';
+            loginForm.classList.add('fade-in');
+            setTimeout(() => loginForm.classList.remove('fade-in'), 500);
+          }, 500);
+          alert("Cadastrado com sucesso")
+        })
+        .catch((error) => {
+          alert("Erro ao cadastrar: " + error.message);
+        });
+    });
+
+    // ===== LOGIN =====
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const inputs = loginForm.querySelectorAll('input');
+      const usernameInput = inputs[0];
+      const passwordInput = inputs[1];
+
+      const emailFake = usernameInput.value.trim() + "@urbanconnect.app";
+      const password = passwordInput.value.trim();
+
+      auth.signInWithEmailAndPassword(emailFake, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          // Login bem-sucedido, redirecionar para index4.html
+          document.body.classList.add('page-fade-out');
+          setTimeout(() => {
+            window.location.href = "menu.html";
+          }, 500);
+
+
+          document.body.classList.add('page-fade-out');
+          setTimeout(() => {
+            window.location.href = "menu.html";
+          }, 500);
+        })
+        .catch((error) => {
+          [usernameInput, passwordInput].forEach(input => {
+            input.classList.add('shake');
+            setTimeout(() => input.classList.remove('shake'), 300);
+          });
+          alert("Erro ao logar! Revise novamente seu nome de usuário e senha.")
+        });
+    });
+  </script>
+
+  <script src="./JS/register-sw.js"></script>
+
+</body>
+
+</html>

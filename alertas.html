@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#9C27B0">
+  <title>Alertas de Segurança</title>
+  <link rel="stylesheet" href="./CSS/alertas.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>Security Alerts</h1>
+    <button id="ofe" onclick="window.location.href='menu.html'">Return</button>
+
+    <div class="categorias">
+      <button class="ativo">⚠️ ALERTS</button>
+      <button>⏺️ OBSERVATION</button>
+      <button>🚨 URGENT</button>
+      <button onclick="enviarMensagemPanico()" class="botao-urgente">
+        SOS
+      </button>
+    </div>
+
+    <div id="lista-itens"></div>
+
+    <div id="blocobranco">
+      <div class="botao-fixo">
+        <a href="./btn-alertas.html" aria-label="Criar novo alerta">
+          <button id="oferecer-btn">Adicionar Alerta</button>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="./JS/firebase-config.js"></script>
+  <script>
+    // ===== API DO GOOGLE MAPS =====
+    function enviarMensagemPanico() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          const mapsLink = `https://maps.google.com/?q=${latitude},${longitude}`;
+          const mensagem = `🚨Alerta! Estou em perigo e sem tempo para escrever. Veja minha localização: ${mapsLink}`;
+
+          const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`;
+          window.open(url, '_blank');
+        }, function (error) {
+          alert('Erro ao obter localização. Por favor, ative o GPS.');
+        });
+      } else {
+        alert('Seu navegador não suporta geolocalização.');
+      }
+    }    
+  </script>
+
+  <script>
+    const lista = document.getElementById('lista-itens');
+    const botoes = document.querySelectorAll('.categorias button');
+    let alertaAtivo = 'alerta';
+
+    let usuarioAtualUID = null;
+
+    // ===== CHECAR SE ESTÁ LOGADO =====
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        alert("Você precisa estar logado.");
+        window.location.href = "index.html";
+        return;
+      }
+      usuarioAtualUID = user.uid;
+      renderAlertas();
+    });
+
+    function renderAlertas() {
+      lista.innerHTML = '';
+      firebase.database().ref("alertas").once("value", snapshot => {
+        const alertas = snapshot.val() || {};
+
+        Object.entries(alertas).forEach(([key, alerta]) => {
+          const isResolvido = alerta.status === 'resolvido';
+          const tipoAlerta = alerta.tipo || 'alerta';
+
+          const condicaoExibir = (
+            (alertaAtivo === 'alerta' && !isResolvido) ||
+            (alertaAtivo === 'urgente' && !isResolvido && tipoAlerta === 'urgente') ||
+            (alertaAtivo === 'resolvido' && isResolvido)
+          );
+
+          if (condicaoExibir) {
+            const div = document.createElement('div');
+            div.className = 'card-alerta ' + (tipoAlerta !== 'urgente' ? 'alerta-normal' : '');
+            div.innerHTML = `
+              <div class="icone">${tipoAlerta === 'urgente' ? '🚨' : '⚠️'}</div>
+              <div class="conteudo">
+                <span class="tempo">
+                  ${tipoAlerta === 'urgente' ? 'Polícia: 190 | Emergência: 192' : 'Alerta de segurança'}
+                  </span>
+                <strong>${alerta.titulo}</strong>
+                <p>${alerta.descricao}</p>
+                <p><strong>Fonte:</strong> ${alerta.local}</p>
+                <div class="botoes-alerta" id="botoes-${key}"></div>
+              </div>
+            `;
+            lista.appendChild(div);
+
+            const botoesDiv = div.querySelector(`#botoes-${key}`);
+            if (alerta.uid === usuarioAtualUID) {
+              botoesDiv.innerHTML += `
+                <button onclick="editarAlerta('${key}')">✏️ Editar</button>
+                <button onclick="excluirAlerta('${key}')">🗑️ Excluir</button>
+                ${isResolvido
+                  ? `<button onclick="cancelarResolvido('${key}')">↩️ Cancelar</button>`
+                  : `<button onclick="resolverAlerta('${key}')">✅ Resolvido</button>`
+                }
+              `;
+            }
+          }
+        });
+      });
+    }
+
+    function editarAlerta(id) {
+      window.location.href = `btn-alertas.html?id=${id}`;
+    }
+
+    function excluirAlerta(id) {
+      if (confirm("Tem certeza que deseja excluir este alerta?")) {
+        firebase.database().ref("alertas").child(id).remove()
+          .then(renderAlertas)
+          .catch(err => console.error("Erro ao excluir:", err));
+      }
+    }
+
+    function resolverAlerta(id) {
+      firebase.database().ref("alertas").child(id).update({ status: 'resolvido' })
+        .then(renderAlertas)
+        .catch(err => console.error("Erro ao resolver:", err));
+    }
+
+    function cancelarResolvido(id) {
+      firebase.database().ref("alertas").child(id).update({ status: '' })
+        .then(renderAlertas)
+        .catch(err => console.error("Erro ao cancelar resolução:", err));
+    }
+
+    botoes.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        botoes.forEach(b => b.classList.remove('ativo'));
+        btn.classList.add('ativo');
+        alertaAtivo = i === 1 ? 'resolvido' : (i === 2 ? 'urgente' : 'alerta');
+        renderAlertas();
+      });
+    });
+  </script>
+
+  <script src="./JS/register-sw.js"></script>
+
+</body>
+
+</html>

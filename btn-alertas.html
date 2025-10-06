@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#9C27B0">
+  <title>Adicionar Alerta</title>
+  <link rel="stylesheet" href="./CSS/btn-alertas.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="container-content">
+
+      <h2>Novo Alerta</h2>
+
+      <form id="form-alerta">
+
+        <input type="text" id="titulo" placeholder="Título do alerta" required />
+
+        <textarea id="descricao" placeholder="Descrição detalhada" required></textarea>
+
+        <input type="text" id="local" placeholder="Local do incidente" required />
+
+        <select id="tipo">
+          <option value="alerta">⚠️ Alerta</option>
+          <option value="urgente">🚨 Urgente</option>
+        </select>
+
+        <button type="button" id="salvar-btn">Salvar Alerta</button>
+
+      </form>
+
+      <button id="btn-voltar">Voltar</button>
+
+    </div>
+  </div>
+
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="./JS/firebase-config.js"></script>
+
+  <script>
+    // ===== CAPTURAR ELEMENTOS =====
+    const tituloInput = document.getElementById('titulo');
+    const descricaoInput = document.getElementById('descricao');
+    const localInput = document.getElementById('local');
+    const tipoInput = document.getElementById('tipo');
+    const botaoSalvar = document.getElementById('salvar-btn');
+    const botaoVoltar = document.getElementById('btn-voltar');
+
+    let alertaEmEdicaoKey = null;
+
+    // ===== CHECAR USUÁRIO LOGADO =====
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        alert("Você precisa estar logado.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      alertaEmEdicaoKey = params.get('id');
+
+      if (alertaEmEdicaoKey) {
+        const alertaRef = firebase.database().ref("alertas").child(alertaEmEdicaoKey);
+        alertaRef.once("value").then(snapshot => {
+          const alerta = snapshot.val();
+          if (alerta && alerta.uid === user.uid) {
+            tituloInput.value = alerta.titulo;
+            descricaoInput.value = alerta.descricao;
+            localInput.value = alerta.local;
+            tipoInput.value = alerta.tipo;
+          } else {
+            alert("Você não tem permissão para editar este alerta.");
+            window.location.href = "alertas.html";
+          }
+        });
+      }
+    });
+
+    // ===== FORMULÁRIO DE ALERTAS =====
+    function salvarAlerta() {
+      const user = firebase.auth().currentUser;
+      if (!user) return;
+
+      const titulo = tituloInput.value.trim();
+      const descricao = descricaoInput.value.trim();
+      const local = localInput.value.trim();
+      const tipo = tipoInput.value;
+
+      if (!titulo || !descricao || !local) {
+        alert("Por favor, preencha todos os campos.");
+        return;
+      }
+
+      const alerta = {
+        titulo,
+        descricao,
+        local,
+        tipo,
+        data: new Date().toISOString(),
+        uid: user.uid
+      };
+
+      const alertasRef = firebase.database().ref("alertas");
+
+      if (alertaEmEdicaoKey) {
+        alertasRef.child(alertaEmEdicaoKey).once("value").then(snapshot => {
+          const existente = snapshot.val();
+          if (existente && existente.uid === user.uid) {
+            alertasRef.child(alertaEmEdicaoKey).update(alerta)
+              .then(() => window.location.href = "alertas.html")
+              .catch(err => console.error("Erro ao editar:", err));
+          } else {
+            alert("Você não pode editar este alerta.");
+          }
+        });
+      } else {
+        alertasRef.push(alerta)
+          .then(() => window.location.href = "alertas.html")
+          .catch(err => console.error("Erro ao salvar:", err));
+      }
+    }
+
+    botaoSalvar.addEventListener('click', salvarAlerta);
+
+    // ===== BOTÃO DE RETORNAR =====
+    botaoVoltar.addEventListener('click', () => {
+      window.location.href = 'alertas.html';
+    });
+  </script>
+
+  <script src="./JS/register-sw.js"></script>
+
+</body>
+
+</html>
